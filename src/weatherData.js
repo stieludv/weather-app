@@ -1,27 +1,7 @@
+const weatherApi = require('./weatherApi');
+
 const weatherData = (() => {
     let weatherData = {};
-
-    console.log("rerun")
-
-    // Fetch weather data from the API
-    const _getWeatherDataAPI = async (loc) => {
-        const apiKey = 'f08318bcb5ba43c7bb1210416240605'; // Replace with your weatherapi.com API key
-        const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${loc}&days=3`;
-        
-        try {
-            const response = await fetch(url, {
-                mode: 'cors'
-              });
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            _saveWeatherDataLocalStorage(data);
-            return data;
-        } catch (error) {
-            console.error('Fetch error:', error);
-        }
-    }
 
     // Store weather data in local storage
     const _saveWeatherDataLocalStorage = (data) => {
@@ -49,27 +29,22 @@ const weatherData = (() => {
 
     // Decide to call API, retrieve from local storage, or do nothing
     const _getCurrentWeatherData = async (loc) => {
-        console.log(`Checking weatherData: ${JSON.stringify(getData())}`)
         if (Object.keys(getData()).length !== 0) {
-            console.log("accessing memo stored data")
             return getData();
         }
 
         const storedData = _getWeatherDataLocalStorage();
         if (storedData) {
-            console.log("accessing local stored data")
             // Object.assign(weatherData, storedData);
             setData(storedData);
-            console.log(`Localstorage setData: ${JSON.stringify(getData())}`);
             return storedData;
         }
 
-        const apiData = await _getWeatherDataAPI(loc);
+        const apiData = await weatherApi.getData(loc);
         if (apiData) {
-            console.log("accessing api for data")
+            _saveWeatherDataLocalStorage(apiData);
             // Object.assign(weatherData, apiData);
             setData(apiData);
-            console.log(`API setData: ${getData()}`);
             return apiData;
         }
 
